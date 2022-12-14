@@ -8,25 +8,32 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.android.marsphotos.databinding.GridViewItemBinding
 import com.example.android.marsphotos.network.MarsPhoto
 
-class PhotoGridAdapter : ListAdapter<MarsPhoto,
-        PhotoGridAdapter.MarsPhotoViewHolder>(DiffCallback) {
+/**
+ * This class implements a [RecyclerView] [ListAdapter] which uses Data Binding to present [List]
+ * data, including computing diffs between lists.
+ */
+class PhotoGridAdapter :
+    ListAdapter<MarsPhoto, PhotoGridAdapter.MarsPhotosViewHolder>(DiffCallback) {
 
-    override fun onCreateViewHolder(
-        parent: ViewGroup,
-        viewType: Int
-    ): PhotoGridAdapter.MarsPhotoViewHolder {
-        return MarsPhotoViewHolder(
-            GridViewItemBinding.inflate(
-                LayoutInflater.from(parent.context)
-            )
-        )
+    /**
+     * The MarsPhotosViewHolder constructor takes the binding variable from the associated
+     * GridViewItem, which nicely gives it access to the full [MarsPhoto] information.
+     */
+    class MarsPhotosViewHolder(
+        private var binding: GridViewItemBinding
+    ) : RecyclerView.ViewHolder(binding.root) {
+        fun bind(marsPhoto: MarsPhoto) {
+            binding.photo = marsPhoto
+            // This is important, because it forces the data binding to execute immediately,
+            // which allows the RecyclerView to make the correct view size measurements
+            binding.executePendingBindings()
+        }
     }
 
-    override fun onBindViewHolder(holder: PhotoGridAdapter.MarsPhotoViewHolder, position: Int) {
-        val marsPhoto = getItem(position)
-        holder.bind(marsPhoto)
-    }
-
+    /**
+     * Allows the RecyclerView to determine which items have changed when the [List] of
+     * [MarsPhoto] has been updated.
+     */
     companion object DiffCallback : DiffUtil.ItemCallback<MarsPhoto>() {
         override fun areItemsTheSame(oldItem: MarsPhoto, newItem: MarsPhoto): Boolean {
             return oldItem.id == newItem.id
@@ -37,15 +44,23 @@ class PhotoGridAdapter : ListAdapter<MarsPhoto,
         }
     }
 
-    class MarsPhotoViewHolder(
-        private var binding:
-        GridViewItemBinding
-    ) :
-        RecyclerView.ViewHolder(binding.root) {
+    /**
+     * Create new [RecyclerView] item views (invoked by the layout manager)
+     */
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int
+    ): MarsPhotosViewHolder {
+        return MarsPhotosViewHolder(
+            GridViewItemBinding.inflate(LayoutInflater.from(parent.context))
+        )
+    }
 
-        fun bind(MarsPhoto: MarsPhoto) {
-            binding.photo = MarsPhoto
-            binding.executePendingBindings()
-        }
+    /**
+     * Replaces the contents of a view (invoked by the layout manager)
+     */
+    override fun onBindViewHolder(holder: MarsPhotosViewHolder, position: Int) {
+        val marsPhoto = getItem(position)
+        holder.bind(marsPhoto)
     }
 }
